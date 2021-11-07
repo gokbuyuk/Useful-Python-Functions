@@ -1,4 +1,5 @@
 #Split strings by capital letter
+import re
 def string_splitter(word, glue):
   """take a word with a capital initial and split 
   it by the capital letters appering in the word 
@@ -7,6 +8,8 @@ def string_splitter(word, glue):
 
 if __name__ == "__main__":
   print(string_splitter("MultipleWordString", " "))
-  
+  print(string_splitter(" ", " "))
+
+
 
 
