@@ -1,5 +1,5 @@
 def ecdf(data):
-    """Compute ECDF for a one-dimensional array of measurements."""
+    """Compute empirical CDF for a one-dimensional array of measurements."""
     # Number of data points: n
     n = len(data)
 
