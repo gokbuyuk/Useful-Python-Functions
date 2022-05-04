@@ -85,3 +85,6 @@ def get_model_performance(model, features):
               'Model': model.get_xgb_params()
    }
   return(new_row)
+
+new_row = get_model_performance(model, features)
+model_metrics = model_metrics.append(new_row, ignore_index=True)
