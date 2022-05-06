@@ -88,3 +88,5 @@ def get_model_performance(model, features):
 
 new_row = get_model_performance(model, features)
 model_metrics = model_metrics.append(new_row, ignore_index=True)
+model_metrics.to_csv('model_metrics.csv', index=False)
+model_metrics.tail()
