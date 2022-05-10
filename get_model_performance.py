@@ -73,7 +73,6 @@ def get_model_performance(model, features):
               'Precision': precision,
               'Recall': recall,
               'Auc_train': auc_train,
-              'Auc_train': auc_train,
               'Auc_val': auc_val, 
               'Auc_test': auc_test,
               'n_bucket': n_bucket,
