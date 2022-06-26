@@ -1,3 +1,5 @@
+
+metric_path = 'path_to_save.csv
 N = 20
 feature_scores_xgb = pd.DataFrame({'Feature': list(X_train.columns)})
 for i in range(N):
@@ -24,17 +26,15 @@ step = (n_max-n_min)//n_model
 n_feature = n_max
   
 for m in range(n_model):
-    model_metrics = get_model_performance(xgb0, features[:n_feature])
-    ane_model_metrics = ane_model_metrics.append(model_metrics, ignore_index=True)
-    model_metrics = get_model_performance(xgb0, features)
-    ane_model_metrics = ane_model_metrics.append(model_metrics, ignore_index=True)
+    new_row = get_model_performance(xgb0, features[:n_feature])
+    model_metrics = model_metrics.append(new_row, ignore_index=True)
     
     # sort by the feature importance and update features with the top n_feature
-    d = model_metrics['Feature Importances']
+    d = new_row['Feature Importances']
     d = dict(sorted(d.items(), key=lambda x: x[1], reverse=True)) 
     n_feature = n_feature - step
         
-model_metrics.to_csv('model_metrics.csv', index=False)
+model_metrics.to_csv(metrics_path, index=False)
 model_metrics.tail()
 
 features_list = [features_xgbwinners]
@@ -54,16 +54,14 @@ for features in features_list:
         n_feature = n_max
             
         for m in range(n_model):
-            model_metrics = get_model_performance(xgb0, features[:n_feature])
-            ane_model_metrics = ane_model_metrics.append(model_metrics, ignore_index=True)
-            model_metrics = get_model_performance(xgb0, features)
-            ane_model_metrics = ane_model_metrics.append(model_metrics, ignore_index=True)
+            new_row = get_model_performance(xgb0, features[:n_feature])
+            model_metrics = model_metrics.append(new_row, ignore_index=True)
             
             # sort by the feature importance and update features with the top n_feature
-            d = model_metrics['Feature Importances']
+            d = new_row['Feature Importances']
             d = dict(sorted(d.items(), key=lambda x: x[1], reverse=True)) 
             n_feature = n_feature - step
             features = list(d.keys())[:n_feature]
         
-model_metrics.to_csv('model_metrics.csv', index=False)
+model_metrics.to_csv(metrics_path, index=False)
 model_metrics.tail()
