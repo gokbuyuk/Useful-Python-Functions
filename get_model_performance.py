@@ -4,6 +4,19 @@ model_metrics = pd.DataFrame(columns=['Accuracy',
                           'FPR','FNR', 'Precision', 'Recall', 'Auc_train', 'Auc_val', 'Auc_test', 'n_bucket',
                           'Q1-Disposition Rate', 'Qn-Disposition Rate', 'n_features', 'Features', 'Feature Importances', 'Model'])
 
+scale = y_train.value_counts()[0]/y_train.value_counts()[1]
+
+model = xgb.XGBClassifier(scale_pos_weight = np.sqrt(scale),
+                         random_state = 42,
+                         eval_metric = 'auc',
+                         use_label_encoder=False,
+                         colsample_bytree = 0.6910552119217912,
+                        gamma = 1.0890531809815442,
+                        max_depth = 6,
+                        min_child_weight = 5,
+                        reg_alpha = 42,
+                        reg_lambda = 0.11872125743598791
+                         )
 
 def get_model_performance(model, features):
   ''' Get the performance of the binary classification model 
