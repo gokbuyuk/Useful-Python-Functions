@@ -38,25 +38,25 @@ model_metrics.to_csv(metrics_path, index=False)
 model_metrics.tail()
 
 features_list = [features_xgbwinners]
-for features in features_list:
+for n in range(20,50,10):
    
     ## train n*m models using the intersection of top n features and building m models iteratively dropping the least important features
-    for n in range(30,40,5):
+    for features in features_list:
               
         # Get the intersection of top n most important features
-        for col in feature_scores_xgb.columns.difference(['Feature']).tolist():
+        for col in feature_scores_xgb.columns.difference(['Feature', 'total_score']).tolist():
             features =  list(set(feature_scores_xgb.sort_values(by=col, ascending=False).iloc[:n,]['Feature']).intersection(features))
         
         n_min = 10
-        n_max = min(50, len(features))
-        n_model = 3
+        n_max = len(features)
+        n_model = 4
         step = (n_max-n_min)//n_model
         n_feature = n_max
             
         for m in range(n_model):
             new_row = get_model_performance(xgb0, features[:n_feature])
             model_metrics = model_metrics.append(new_row, ignore_index=True)
-            
+            print(model_metrics.iloc[-1,:12])
             # sort by the feature importance and update features with the top n_feature
             d = new_row['Feature Importances']
             d = dict(sorted(d.items(), key=lambda x: x[1], reverse=True)) 
