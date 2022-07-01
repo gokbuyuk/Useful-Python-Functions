@@ -7,7 +7,7 @@ order_features_model1 = vi.result.sort_values(by='dropout_loss', ascending=False
 
 feature_imp = order_features_model1[order_features_model1['variable'].isin(features)]
 for feature in features:
-    temp_df = county_summaries[[feature, target]].dropna()
+    temp_df = Xy_train[[feature, target]].dropna()
     r, p = stats.pearsonr(temp_df[feature], temp_df[target])
     feature_imp.loc[feature_imp['variable']==feature, 'Direction'] = np.where( r< 0,  
     'Negative', 'Positive')
