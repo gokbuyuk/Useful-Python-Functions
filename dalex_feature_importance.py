@@ -13,6 +13,4 @@ for feature in features:
     'Negative', 'Positive')
     
 sns.barplot(data=feature_imp, y='variable', x='dropout_loss', hue='Direction', dodge=False)
-plt.title('RMSE dropout loss for features in XGBoost Regression model for age 18 to 64')
-plt.xlabel('Dropout loss')
-plt.ylabel('Feature')
+
