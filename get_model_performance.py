@@ -2,7 +2,7 @@ model_metrics = pd.read_csv('model_metrics.csv', header=0)
 
 model_metrics = pd.DataFrame(columns=['Accuracy', 
                           'FPR','FNR', 'Precision', 'Recall', 'Auc_train', 'Auc_val', 'Auc_test', 'n_bucket',
-                          'Q1-Disposition Rate', 'Qn-Disposition Rate', 'n_features', 'Features', 'Feature Importances', 'Model'])
+                          'Q1-Positive Rate', 'Qn-Positive Rate', 'n_features', 'Features', 'Feature Importances', 'Model'])
 
 scale = y_train.value_counts()[0]/y_train.value_counts()[1]
 
@@ -18,46 +18,38 @@ model = xgb.XGBClassifier(scale_pos_weight = np.sqrt(scale),
                         reg_lambda = 0.11872125743598791
                          )
 
-def get_model_performance(model, features):
+def get_model_performance(model, target, features):
   ''' Get the performance of the binary classification model 
   using the given list of features on training, validation 
   and test sets 
   model: classifier,
-  features: list of column names
+  features: list of column names to train the model with
+  target: str target column name
   '''
   clf = model.fit(X_train[features],y_train)
   n_bucket = 4
-  try:
-    try: 
-      test_probs_0 = model.predict_proba(X_train[features])[:, 0]
-      quarters = pd.qcut(test_probs_0, 4, labels=list(range(1,n_bucket+1)))
-    except ValueError:
-      test_probs_0 = model.predict_proba(X_val[features])[:, 0]
-      quarters = pd.qcut(test_probs_0, 4, labels=list(range(1,n_bucket+1)))
-    try:    
-      probs = pd.DataFrame({'Prob_0' :test_probs_0, 
-                              'Quarter' :quarters})
-      cutoffs = probs.groupby('Quarter').max().reset_index()
-      cutoff_probs = [-0.5] + list(cutoffs['Prob_0'])[:-1] + [1.1] 
 
-      df_ml_probs_0 = model.predict_proba(X_val[features])[:, 0]
-      prob_1 = [1 - x for x in df_ml_probs_0]
-      quarters = pd.cut(df_ml_probs_0, cutoff_probs, labels=list(range(1,n_bucket+1)), duplicates='raise')
-      df_ml_quarters = pd.DataFrame({'Probability_1': prob_1,
-                                    'Quarter': quarters,
-                                    'Disposition': y_val})
-      perf = df_ml_quarters.groupby('Quarter')['Disposition'].mean().round(3).reset_index()
-      
-      # y_quarter1 = perf[perf['Quarter']==1]['Disposition'].mean()
-      # y_quarter4 = df_ml_quarters[df_ml_quarters['Quarter']==4]['Disposition'].mean()
-      Q1_disp_rate = perf['Disposition'][0]
-      Qn_disp_rate = perf['Disposition'][n_bucket-1]
-    except ValueError:
-      Q1_disp_rate = ''
-      Qn_disp_rate = ''
-  except ValueError:
-    Q1_disp_rate = ''
-    Qn_disp_rate = ''
+  test_probs_0 = model.predict_proba(X_train[features])[:, 0]
+  quarters = pd.qcut(test_probs_0, 4, labels=list(range(1,n_bucket+1)))
+ 
+  probs = pd.DataFrame({'Prob_0' :test_probs_0, 
+                          'Quarter' :quarters})
+  cutoffs = probs.groupby('Quarter').max().reset_index()
+  cutoff_probs = [-0.1] + list(cutoffs['Prob_0'])[:-1] + [1.1] 
+
+  df_ml_probs_0 = model.predict_proba(X_val[features])[:, 0]
+  prob_1 = [1 - x for x in df_ml_probs_0]
+  quarters = pd.cut(df_ml_probs_0, cutoff_probs, labels=list(range(1,n_bucket+1)), duplicates='raise')
+  df_ml_quarters = pd.DataFrame({'Probability_1': prob_1,
+                                'Quarter': quarters,
+                                target: y_val})
+  perf = df_ml_quarters.groupby('Quarter')[target].mean().round(3).reset_index()
+
+  # y_quarter1 = perf[perf['Quarter']==1][target].mean()
+  # y_quarter4 = df_ml_quarters[df_ml_quarters['Quarter']==4][target].mean()
+  Q1_Positive_rate = perf[target][0]
+  Qn_Positive_rate = perf[target][n_bucket-1]
+
 
   y_pred = model.predict_proba(X_train[features])[:,1]
   fpr, tpr, thresholds = roc_curve(y_train, y_pred)
@@ -89,8 +81,8 @@ def get_model_performance(model, features):
               'Auc_val': auc_val, 
               'Auc_test': auc_test,
               'n_bucket': n_bucket,
-              'Q1-Disposition Rate': Q1_disp_rate,
-              'Qn-Disposition Rate': Qn_disp_rate,  
+              'Q1-Positive Rate': Q1_Positive_rate,
+              'Qn-Positive Rate': Qn_Positive_rate,  
               'n_features': len(features),
               'Features': list(features),
               'Feature Importances': dict(zip(features, model.feature_importances_)),
